@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2017 The Android Open Source Project
- * Copyright (C) 2017-2018 The LineageOS Project
+ * Copyright (C) 2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@
 #ifndef ANDROID_HARDWARE_POWER_V1_1_POWER_H
 #define ANDROID_HARDWARE_POWER_V1_1_POWER_H
 
+#ifdef V1_0_HAL
+#include <android/hardware/power/1.0/IPower.h>
+#else
 #include <android/hardware/power/1.1/IPower.h>
-#include <vendor/lineage/power/1.0/ILineagePower.h>
+#endif
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
 #include <hardware/power.h>
@@ -27,34 +30,38 @@
 namespace android {
 namespace hardware {
 namespace power {
+#ifdef V1_0_HAL
+namespace V1_0 {
+#else
 namespace V1_1 {
+#endif
 namespace implementation {
 
 using ::android::hardware::power::V1_0::Feature;
 using ::android::hardware::power::V1_0::PowerHint;
+#ifdef V1_0_HAL
+using ::android::hardware::power::V1_0::IPower;
+#else
 using ::android::hardware::power::V1_1::IPower;
-using ::vendor::lineage::power::V1_0::ILineagePower;
-using ::vendor::lineage::power::V1_0::LineageFeature;
+#endif
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 
-struct Power : public IPower, public ILineagePower {
+struct Power : public IPower {
     // Methods from ::android::hardware::power::V1_0::IPower follow.
 
     Power();
-    status_t registerAsSystemService();
 
     Return<void> setInteractive(bool interactive) override;
     Return<void> powerHint(PowerHint hint, int32_t data) override;
     Return<void> setFeature(Feature feature, bool activate) override;
     Return<void> getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_cb) override;
 
+#ifndef V1_0_HAL
     // Methods from ::android::hardware::power::V1_1::IPower follow.
     Return<void> getSubsystemLowPowerStats(getSubsystemLowPowerStats_cb _hidl_cb) override;
     Return<void> powerHintAsync(PowerHint hint, int32_t data) override;
-
-    // Methods from ::vendor::lineage::power::V1_0::ILineagePower follow.
-    Return<int32_t> getFeature(LineageFeature feature) override;
+#endif
 
     // Methods from ::android::hidl::base::V1_0::IBase follow.
 

@@ -1,5 +1,5 @@
 # Copyright (C) 2017 The Android Open Source Project
-# Copyright (C) 2017-2018 The LineageOS Project
+# Copyright (C) 2017 The LineageOS Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ LOCAL_SHARED_LIBRARIES := \
     libhidlbase \
     libhidltransport \
     libhardware \
-    libhwbinder \
     libutils
 
 LOCAL_SRC_FILES := \
@@ -40,7 +39,8 @@ LOCAL_SRC_FILES := \
     metadata-parser.c \
     utils.c \
     list.c \
-    hint-data.c
+    hint-data.c \
+    powerhintparser.c
 
 LOCAL_C_INCLUDES := external/libxml2/include \
                     external/icu/icu4c/source/common
@@ -52,10 +52,6 @@ ifneq ($(BOARD_POWER_CUSTOM_BOARD_LIB),)
 else
 
 # Include target-specific files.
-ifeq ($(call is-board-platform-in-list, msm8960), true)
-LOCAL_SRC_FILES += power-8960.c
-endif
-
 ifeq ($(call is-board-platform-in-list, msm8974), true)
 LOCAL_SRC_FILES += power-8974.c
 endif
@@ -85,7 +81,7 @@ LOCAL_SRC_FILES += power-8996.c
 endif
 
 ifeq ($(call is-board-platform-in-list,msm8937), true)
-LOCAL_SRC_FILES += power-8937.c
+LOCAL_SRC_FILES += power-8952.c
 endif
 
 ifeq ($(call is-board-platform-in-list,msm8952), true)
@@ -139,10 +135,6 @@ ifeq ($(TARGET_HAS_LEGACY_POWER_STATS),true)
     LOCAL_CFLAGS += -DLEGACY_STATS
 endif
 
-ifeq ($(TARGET_HAS_NO_POWER_STATS),true)
-    LOCAL_CFLAGS += -DNO_STATS
-endif
-
 ifneq ($(TARGET_RPM_STAT),)
     LOCAL_CFLAGS += -DRPM_STAT=\"$(TARGET_RPM_STAT)\"
 endif
@@ -159,17 +151,16 @@ ifneq ($(TARGET_WLAN_POWER_STAT),)
     LOCAL_CFLAGS += -DWLAN_POWER_STAT=\"$(TARGET_WLAN_POWER_STAT)\"
 endif
 
-ifeq ($(TARGET_HAS_NO_WLAN_STATS),true)
-LOCAL_CFLAGS += -DNO_WLAN_STATS
-endif
-
-ifeq ($(TARGET_ARCH),arm)
-LOCAL_CFLAGS += -DARCH_ARM_32
-endif
-
+ifeq ($(TARGET_HAS_NO_WIFI_STATS),true)
+LOCAL_MODULE := android.hardware.power@1.0-service-qti
+LOCAL_INIT_RC := android.hardware.power@1.0-service-qti.rc
+LOCAL_SHARED_LIBRARIES += android.hardware.power@1.0
+LOCAL_CFLAGS += -DV1_0_HAL
+else
 LOCAL_MODULE := android.hardware.power@1.1-service-qti
 LOCAL_INIT_RC := android.hardware.power@1.1-service-qti.rc
-LOCAL_SHARED_LIBRARIES += android.hardware.power@1.1 vendor.lineage.power@1.0
+LOCAL_SHARED_LIBRARIES += android.hardware.power@1.1
+endif
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_OWNER := qcom
 LOCAL_VENDOR_MODULE := true
